@@ -1,0 +1,40 @@
+name: Reservar Parkalot
+
+on:
+  schedule:
+    # Todos los días: 17:50 UTC = 11:50 a. m. de Costa Rica.
+    - cron: '50 17 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: parkalot-reservation
+  cancel-in-progress: false
+
+jobs:
+  reservar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PARKALOT_EMAIL: ${{ secrets.PARKALOT_EMAIL }}
+      PARKALOT_PASSWORD: ${{ secrets.PARKALOT_PASSWORD }}
+      PARKALOT_TIMEZONE: America/Costa_Rica
+      PARKALOT_HEADLESS: 'true'
+      PARKALOT_BROWSER: chromium
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Comprobar credenciales
+        run: |
+          node --input-type=module -e 'if (!process.env.PARKALOT_EMAIL || !process.env.PARKALOT_PASSWORD) { console.error("Configura los secrets PARKALOT_EMAIL y PARKALOT_PASSWORD."); process.exit(1); }'
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Reservar con prioridad 132, 129 y otros disponibles
+        run: npm start
