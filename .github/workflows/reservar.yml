@@ -3,7 +3,7 @@ name: Reservar Parkalot
 on:
   schedule:
     # Todos los días: 17:50 UTC = 11:50 a. m. de Costa Rica.
-    - cron: '42 16 * * *'
+    - cron: '47 16 * * *'
   workflow_dispatch:
 
 permissions:
